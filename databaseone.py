@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .models.models import Base
+from models.models import Base
 
 # Configuration de la base de données
 # Remplacez par vos vraies informations de connexion
