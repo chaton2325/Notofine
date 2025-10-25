@@ -47,6 +47,24 @@ class SubscriptionStatus(enum.Enum):
     paid = "paid"
     canceled = "canceled"
 
+# ---------------------------
+# State
+# ---------------------------
+
+class State(Base):
+    __tablename__ = "states"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+
+    # Relation inverse vers les utilisateurs
+    users = relationship("User", back_populates="state")
+
+    def __repr__(self) -> str:
+        return f"<State id={self.id} name={self.name}>"
+
+
+
 
 # ---------------------------
 # USERS
@@ -59,10 +77,15 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     phone = Column(String(20), nullable=True)
+
+    # ✅ Clé étrangère vers State
+    state_id = Column(Integer, ForeignKey("states.id"))  # 👈 clé étrangère correcte
+    state = relationship("State", back_populates="users")
+
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    # Relations
+    # Relations existantes
     tickets = relationship("Ticket", back_populates="user", cascade="all, delete-orphan")
     reminders = relationship("Reminder", back_populates="user", cascade="all, delete-orphan")
     subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")

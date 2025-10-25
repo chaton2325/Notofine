@@ -2,11 +2,19 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 
-from database.databaseone import SessionLocal
+from databaseone import SessionLocal
 from models.models import User, Ticket, Reminder, ReminderChannel, NotificationChannel, Notification
 from fonctions_utiles import NotificationService, process_reminders
+from controller.auth_controller import router as auth_router
 
-app = FastAPI(title="Notofine API", description="API de gestion des contraventions avec notifications")
+app = FastAPI(
+    title="Notofine API", 
+    description="API de gestion des contraventions avec notifications",
+    version="1.0.0"
+)
+
+# Inclure les routes d'authentification
+app.include_router(auth_router)
 
 # Dependency pour la base de données
 def get_db():

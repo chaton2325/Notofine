@@ -3,16 +3,28 @@
 -- Description : Application mobile de rappel de paiement de contraventions
 -- ===========================================================
 
--- 1️⃣ USERS
+-- Table des États
+CREATE TABLE states (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Table des Utilisateurs
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
+    state_id INTEGER REFERENCES states(id) ON DELETE SET NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
+
+
 
 -- ===========================================================
 -- 2️⃣ SUBSCRIPTIONS
@@ -62,7 +74,11 @@ CREATE TABLE reminders (
 );
 
 -- ===========================================================
--- 5️⃣.1 REMINDER CHANNELS (canaux de notification pour les rappels)
+-- 5️⃣.1 TYPES ENUM
+CREATE TYPE notification_channel AS ENUM ('email', 'sms', 'push');
+
+-- ===========================================================
+-- 5️⃣.2 REMINDER CHANNELS (canaux de notification pour les rappels)
 CREATE TABLE reminder_channels (
     id SERIAL PRIMARY KEY,
     reminder_id INTEGER NOT NULL REFERENCES reminders(id) ON DELETE CASCADE,
@@ -73,7 +89,6 @@ CREATE TABLE reminder_channels (
 
 -- ===========================================================
 -- 6️⃣ NOTIFICATIONS
-CREATE TYPE notification_channel AS ENUM ('email', 'sms', 'push');
 
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
