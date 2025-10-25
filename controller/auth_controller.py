@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from typing import Optional
 
 from databaseone import get_db
-from models.models import User
+from models.models import User , State
 from passlib.context import CryptContext
 from datetime import datetime
 
@@ -26,6 +26,13 @@ from pydantic import BaseModel, EmailStr
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+def get_user_by_email(email: str, db: Session):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    return user
+
 
 class UserRegister(BaseModel):
     full_name: str
@@ -51,9 +58,27 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+    @classmethod
+    def from_orm(cls, user):
+        return cls(
+            id=user.id,
+            full_name=user.full_name,
+            email=user.email,
+            phone=user.phone,
+            state=user.state.name if user.state else None,  # 👈 ici on prend seulement le nom
+            is_active=user.is_active,
+            created_at=user.created_at
+        )
+
 class LoginResponse(BaseModel):
     user: UserResponse
     message: str
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    state: Optional[str] = None
+    password: Optional[str] = None  # 👈 nouveau champ
 
 # Routes
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -133,8 +158,21 @@ def get_user_info(email: str, db: Session = Depends(get_db)):
     """
     Récupérer les informations d'un utilisateur par son email
     """
-    user = get_user_by_email(email, db)
-    return user
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+    # ⚡ Transformer state en string
+    return {
+        "id": user.id,
+        "full_name": user.full_name,
+        "email": user.email,
+        "phone": user.phone,
+        "state": user.state.name if user.state else None,
+        "is_active": user.is_active,
+        "created_at": user.created_at
+    }
+
 
 @router.post("/logout")
 def logout_user():
@@ -146,24 +184,30 @@ def logout_user():
 @router.put("/user/{email}", response_model=UserResponse)
 def update_user_profile(
     email: str,
-    full_name: Optional[str] = None,
-    phone: Optional[str] = None,
-    state: Optional[str] = None,
+    user_update: UserUpdate,
     db: Session = Depends(get_db)
 ):
-    """
-    Mettre à jour le profil d'un utilisateur par son email
-    """
     user = get_user_by_email(email, db)
     
-    if full_name is not None:
-        user.full_name = full_name
-    if phone is not None:
-        user.phone = phone
-    if state is not None:
-        user.state = state
+    if user_update.full_name:
+        user.full_name = user_update.full_name
+    if user_update.phone:
+        user.phone = user_update.phone
+    if user_update.state:
+        state_obj = db.query(State).filter(State.name == user_update.state).first()
+        if not state_obj:
+            raise HTTPException(status_code=404, detail="État introuvable")
+        user.state = state_obj
+    if user_update.password:
+        user.password_hash = get_password_hash(user_update.password)
     
     db.commit()
     db.refresh(user)
-    
-    return user
+    return UserResponse.from_orm(user)
+
+
+
+
+
+
+
