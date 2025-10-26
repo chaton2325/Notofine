@@ -6,6 +6,7 @@ from databaseone import SessionLocal
 from models.models import User, Ticket, Reminder, ReminderChannel, NotificationChannel, Notification
 from fonctions_utiles import NotificationService, process_reminders
 from controller.auth_controller import router as auth_router
+from fastapi.middleware.cors import CORSMiddleware # 1. Importez le middleware
 
 app = FastAPI(
     title="Notofine API", 
@@ -15,6 +16,20 @@ app = FastAPI(
 
 # Inclure les routes d'authentification
 app.include_router(auth_router)
+
+# 2. Définissez les "origines" autorisées (les adresses qui ont le droit de parler à votre API)
+origins = [
+    "*"  # En développement, "*" autorise tout le monde. C'est le plus simple.
+]
+
+# 3. Ajoutez le middleware à votre application
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Autorise toutes les méthodes (POST, GET, PUT, etc.)
+    allow_headers=["*"], # Autorise tous les en-têtes
+)
 
 # Dependency pour la base de données
 def get_db():
