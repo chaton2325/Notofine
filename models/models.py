@@ -87,7 +87,6 @@ class User(Base):
 
     # Relations existantes
     tickets = relationship("Ticket", back_populates="user", cascade="all, delete-orphan")
-    reminders = relationship("Reminder", back_populates="user", cascade="all, delete-orphan")
     subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
 
@@ -138,6 +137,7 @@ class Ticket(Base):
     # Relations
     user = relationship("User", back_populates="tickets")
     payments = relationship("Payment", back_populates="ticket", cascade="all, delete-orphan")
+    reminders = relationship("Reminder", back_populates="ticket", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="ticket", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
@@ -174,17 +174,17 @@ class Reminder(Base):
     __tablename__ = "reminders"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    ticket_id = Column(Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False, index=True)
     frequency_days = Column(Integer, default=7, nullable=False)  # ex: 7 = hebdomadaire
     active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relations
-    user = relationship("User", back_populates="reminders")
+    ticket = relationship("Ticket", back_populates="reminders")
     notification_channels = relationship("ReminderChannel", back_populates="reminder", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Reminder id={self.id} user_id={self.user_id} freq={self.frequency_days}>"
+        return f"<Reminder id={self.id} ticket_id={self.ticket_id} freq={self.frequency_days}>"
 
 
 # ---------------------------
@@ -195,7 +195,7 @@ class ReminderChannel(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     reminder_id = Column(Integer, ForeignKey("reminders.id", ondelete="CASCADE"), nullable=False, index=True)
-    channel = Column(SAEnum(NotificationChannel), nullable=False)
+    channel = Column(SAEnum(NotificationChannel, name="notification_channel"), nullable=False)
     enabled = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -216,7 +216,7 @@ class Notification(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id", ondelete="SET NULL"), nullable=True, index=True)
     reminder_id = Column(Integer, ForeignKey("reminders.id", ondelete="SET NULL"), nullable=True, index=True)
-    channel = Column(SAEnum(NotificationChannel), nullable=False)
+    channel = Column(SAEnum(NotificationChannel, name="notification_channel"), nullable=False)
     message = Column(Text, nullable=False)
     subject = Column(String(255), nullable=True)  # Pour les emails
     status = Column(String(20), default="pending", nullable=False)  # pending, sent, failed

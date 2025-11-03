@@ -50,4 +50,3 @@ def get_db():
 @app.get("/")
 def read_root():
     return {"message": "Bienvenue sur l'API Notofine 🚀", "version": "1.0.0"}
-

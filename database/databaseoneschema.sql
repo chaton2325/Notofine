@@ -50,7 +50,7 @@ CREATE TABLE tickets (
     image_url VARCHAR(255),
     payment_url VARCHAR(255),
     status VARCHAR(20) DEFAULT 'en_cours',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ===========================================================
@@ -69,7 +69,7 @@ CREATE TABLE payments (
 -- 5️⃣ REMINDERS
 CREATE TABLE reminders (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    ticket_id INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
     frequency_days INTEGER DEFAULT 7,
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -113,7 +113,7 @@ CREATE INDEX idx_tickets_user_id ON tickets(user_id);
 CREATE INDEX idx_tickets_ticket_number ON tickets(ticket_number);
 CREATE INDEX idx_payments_ticket_id ON payments(ticket_id);
 CREATE INDEX idx_payments_subscription_id ON payments(subscription_id);
-CREATE INDEX idx_reminders_user_id ON reminders(user_id);
+CREATE INDEX idx_reminders_ticket_id ON reminders(ticket_id);
 CREATE INDEX idx_reminder_channels_reminder_id ON reminder_channels(reminder_id);
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_ticket_id ON notifications(ticket_id);
