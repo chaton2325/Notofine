@@ -129,7 +129,9 @@ class Ticket(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     ticket_number = Column(String(50), nullable=False, index=True)
     description = Column(Text, nullable=True)
+    amount_usd = Column(Numeric(10, 2), nullable=False)
     image_url = Column(String(255), nullable=True)
+    payment_url = Column(String(255), nullable=True)
     status = Column(SAEnum(TicketStatus), default=TicketStatus.en_cours, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

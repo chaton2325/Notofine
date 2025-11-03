@@ -46,9 +46,11 @@ CREATE TABLE tickets (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     ticket_number VARCHAR(50) NOT NULL,
     description TEXT,
+    amount_usd NUMERIC(10,2) NOT NULL,
     image_url VARCHAR(255),
+    payment_url VARCHAR(255),
     status VARCHAR(20) DEFAULT 'en_cours',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    
 );
 
 -- ===========================================================

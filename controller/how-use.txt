@@ -7,4 +7,10 @@ update user : curl -X PUT "http://localhost:8000/auth/user/jean@example.com" -H 
 
 
 
--------------------------------------------- Add rappel controller ---------------------------------------------------------
+-------------------------------------------- Ticket controller ---------------------------------------------------------
+Create ticket : curl -X POST "http://127.0.0.1:8000/tickets/" -H "Content-Type: multipart/form-data" -F "email=jean@example.com" -F "ticket_number=T789012" -F "amount_usd=75.00" -F "payment_url=https://payment.provider.com/pay/xyz123" -F "description=Stationnement non autorisé" -F "image=@op.jpg"
+
+Liste des tickets : "http://127.0.0.1:8000/tickets/user/jean@example.com"
+curl -X DELETE "http://127.0.0.1:8000/tickets/1"
+curl -X PUT "http://127.0.0.1:8000/tickets/1" -H "Content-Type: multipart/form-data" -F "status=regle" -F "email=jean@example.com"
+
