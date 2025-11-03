@@ -1,4 +1,10 @@
+
+------------------------------------------- Auth controller api ------------------------------------------------------------
 Create user : curl -X POST "http://localhost:8000/auth/register" -H "Content-Type: application/json" -d "{\"full_name\": \"Jean Dupont\", \"email\": \"jean@example.com\", \"password\": \"monmotdepasse\", \"phone\": \"22222222\", \"state_id\": 1}"
 Login user : curl -X POST "http://localhost:8000/auth/login" -H "Content-Type: application/json" -d "{\"email\": \"jean@example.com\", \"password\": \"monmotdepasse\"}"
 Obtain user : curl -X GET "http://localhost:8000/auth/user/jean@example.com"
 update user : curl -X PUT "http://localhost:8000/auth/user/jean@example.com" -H "Content-Type: application/json" -d "{\"full_name\": \"Jean Dupont Modifié\", \"phone\": \"33333333\", \"state\": \"Tunis\", \"password\": \"NouveauMotDePasse\"}"
+
+
+
+-------------------------------------------- Add rappel controller ---------------------------------------------------------
