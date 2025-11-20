@@ -10,6 +10,7 @@ if __name__ == "__main__":
     print("📖 Documentation disponible sur: http://localhost:8000/docs")
     print("🔧 Interface alternative: http://localhost:8000/redoc")
     print("=" * 50)
+
     
     uvicorn.run(
         "main:app",

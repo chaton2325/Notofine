@@ -167,6 +167,7 @@ def delete_ticket(ticket_id: int, db: Session = Depends(get_db)):
         image_path_to_delete = ticket.image_url.lstrip('/')
 
     try:
+    
         db.delete(ticket)
         db.commit()
 

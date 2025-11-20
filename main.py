@@ -21,7 +21,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Inclure les routers pour l'authentification et les tickets
-app.include_router(auth_router, prefix="/auth", tags=["Authentification"])
+app.include_router(auth_router)
 app.include_router(ticket_router)
 app.include_router(reminder_router)
 
