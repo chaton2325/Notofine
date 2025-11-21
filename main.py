@@ -10,6 +10,7 @@ from controller.ticket_controller import router as ticket_router
 from controller.reminder_controller import router as reminder_router
 from controller.subscription_controller import router as subscription_router
 from controller.admin_controller import router as admin_router
+from controller.device_token_controller import router as device_token_router
 from fastapi.middleware.cors import CORSMiddleware # 1. Importez le middleware
 
 app = FastAPI(
@@ -28,6 +29,7 @@ app.include_router(ticket_router)
 app.include_router(reminder_router)
 app.include_router(subscription_router)
 app.include_router(admin_router)
+app.include_router(device_token_router)
 
 # 2. Définissez les "origines" autorisées (les adresses qui ont le droit de parler à votre API)
 origins = [

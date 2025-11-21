@@ -34,3 +34,9 @@ admin creer un plan :  curl -X POST "http://127.0.0.1:8000/api/plans" -H "accept
 Lister tous les plans (admin): curl -X GET "http://127.0.0.1:8000/api/admin/plans" -H "accept: application/json"
 Mettre à jour un plan (ID 1): curl -X PUT "http://127.0.0.1:8000/api/admin/plans/1" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"price\": 12.99, \"description\": \"Nouvelle description.\", \"is_active\": true}"
 supprimer un plan (ID 1): curl -X DELETE "http://127.0.0.1:8000/api/admin/plans/1" -H "accept: application/json"
+
+
+--------------------------------------------------Device Token Management----------------------------------------------------
+Ajouter/Mettre à jour un token d'appareil: curl -X POST "http://127.0.0.1:8000/api/device-tokens" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"user_email\": \"test@example.com\", \"device_token\": \"un-token-unique-pour-un-appareil-android\", \"device_type\": \"android\"}"
+Supprimer un token d'appareil: curl -X DELETE "http://127.0.0.1:8000/api/device-tokens/un-token-unique-pour-un-appareil-android" -H "accept: application/json"
+Lister les tokens d'un utilisateur: curl -X GET "http://127.0.0.1:8000/api/device-tokens/user/test@example.com" -H "accept: application/json"
