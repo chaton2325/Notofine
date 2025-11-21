@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from models.models import Base, NotificationChannel
+from models.models import Base, NotificationChannel, DeviceType, SubscriptionStatus
 from sqlalchemy.dialects.postgresql import ENUM
 
 
@@ -25,11 +25,23 @@ def create_enums(target, connection, **kw):
     if connection.dialect.name != 'postgresql':
         return
 
-    pg_enum = ENUM(
+    pg_enum_notification = ENUM(
         *[e.value for e in NotificationChannel], 
         name="notification_channel"
     )
-    pg_enum.create(connection, checkfirst=True)
+    pg_enum_notification.create(connection, checkfirst=True)
+
+    pg_enum_device = ENUM(
+        *[e.value for e in DeviceType],
+        name="device_type"
+    )
+    pg_enum_device.create(connection, checkfirst=True)
+
+    pg_enum_subscription = ENUM(
+        *[e.value for e in SubscriptionStatus],
+        name="subscription_status"
+    )
+    pg_enum_subscription.create(connection, checkfirst=True)
 
 
 def init_db():

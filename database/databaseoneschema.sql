@@ -18,25 +18,38 @@ CREATE TABLE users (
     phone VARCHAR(20),
     state_id INTEGER REFERENCES states(id) ON DELETE SET NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    abonnement_finish TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ===========================================================
+-- 1.1 PLANS
+-- ===========================================================
+CREATE TABLE plans (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    price NUMERIC(10,2) NOT NULL,
+    duration_days INTEGER NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE
+);
 
-
-
-
+-- ===========================================================
+-- 1.2 TYPES ENUM POUR ABONNEMENTS
+-- ===========================================================
+CREATE TYPE subscription_status AS ENUM ('pending', 'paid', 'canceled');
 
 -- ===========================================================
 -- 2️⃣ SUBSCRIPTIONS
 CREATE TABLE subscriptions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    plan_name VARCHAR(50) DEFAULT 'basic',
-    amount_usd NUMERIC(10,2) NOT NULL,
-    payment_status VARCHAR(20) DEFAULT 'paid',
-    start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    end_date TIMESTAMP,
-    auto_renew BOOLEAN DEFAULT FALSE
+    plan_id INTEGER NOT NULL REFERENCES plans(id),
+    payment_status subscription_status DEFAULT 'paid',
+    start_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    auto_renew BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ===========================================================
@@ -107,6 +120,19 @@ CREATE TABLE notifications (
 );
 
 -- ===========================================================
+-- 6.1 USER DEVICE TOKENS (pour notifications push)
+-- ===========================================================
+CREATE TYPE device_type AS ENUM ('ios', 'android', 'web');
+
+CREATE TABLE user_device_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_token VARCHAR(255) UNIQUE NOT NULL,
+    device_type device_type NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ===========================================================
 -- 7️⃣ INDEX POUR PERFORMANCE
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_tickets_user_id ON tickets(user_id);
@@ -121,3 +147,6 @@ CREATE INDEX idx_notifications_reminder_id ON notifications(reminder_id);
 CREATE INDEX idx_notifications_status ON notifications(status);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX idx_user_device_tokens_user_id ON user_device_tokens(user_id);
+CREATE INDEX idx_user_device_tokens_device_token ON user_device_tokens(device_token);
+CREATE INDEX idx_subscriptions_plan_id ON subscriptions(plan_id);

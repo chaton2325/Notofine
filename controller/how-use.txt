@@ -20,3 +20,17 @@ Create Reminder: curl -X POST "http://127.0.0.1:8000/reminders/" -H "Content-Typ
 Get all user's reminders: curl -X GET "http://127.0.0.1:8000/reminders/jean@example.com"
 Update Reminder: curl -X PUT "http://127.0.0.1:8000/reminders/1" -H "Content-Type: application/json" -d "{\"frequency_days\": 10, \"channels\": [\"push\"]}"
 Delete Reminder: curl -X DELETE "http://127.0.0.1:8000/reminders/1"
+
+
+--------------------------------------------------Plan----------------------------------------------------
+Creer un abonnement pour un utilisateur : curl -X POST "http://127.0.0.1:8000/api/subscriptions" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"user_email\":\"test@example.com\",\"plan_id\":1}"
+recuperer les abonnements d'un utilisateur : curl -X GET "http://127.0.0.1:8000/api/subscriptions/user/test@example.com" -H "accept: application/json"
+Verifier l'etat d'abonnement d'un utilisateur : curl -X GET "http://127.0.0.1:8000/api/subscriptions/user/tsarisila@gmail.com/status" -H "accept: application/json"
+surpprimer la souscrition d'un utilisateur : curl -X DELETE "http://127.0.0.1:8000/api/subscriptions/1" -H "accept: application/json"
+
+
+--------------------------------------------------Admin Plan Management----------------------------------------------------
+admin creer un plan :  curl -X POST "http://127.0.0.1:8000/api/plans" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"name\":\"Premium Mensuel\",\"price\":9.99,\"duration_days\":30,\"description\":\"Accès complet à toutes les fonctionnalités pendant 30 jours.\"}"
+Lister tous les plans (admin): curl -X GET "http://127.0.0.1:8000/api/admin/plans" -H "accept: application/json"
+Mettre à jour un plan (ID 1): curl -X PUT "http://127.0.0.1:8000/api/admin/plans/1" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"price\": 12.99, \"description\": \"Nouvelle description.\", \"is_active\": true}"
+supprimer un plan (ID 1): curl -X DELETE "http://127.0.0.1:8000/api/admin/plans/1" -H "accept: application/json"

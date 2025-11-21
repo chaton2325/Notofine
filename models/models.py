@@ -47,6 +47,13 @@ class SubscriptionStatus(enum.Enum):
     paid = "paid"
     canceled = "canceled"
 
+
+class DeviceType(enum.Enum):
+    ios = "ios"
+    android = "android"
+    web = "web"
+
+
 # ---------------------------
 # State
 # ---------------------------
@@ -84,14 +91,36 @@ class User(Base):
 
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    abonnement_finish = Column(DateTime(timezone=True), nullable=True)  # Date de fin de l'abonnement actif
 
     # Relations existantes
     tickets = relationship("Ticket", back_populates="user", cascade="all, delete-orphan")
     subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    device_tokens = relationship("UserDeviceToken", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email={self.email}>"
+
+
+# ---------------------------
+# PLANS (plans de souscription)
+# ---------------------------
+class Plan(Base):
+    __tablename__ = "plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, nullable=False) # e.g., "basic_monthly", "premium_yearly"
+    price = Column(Numeric(10, 2), nullable=False)
+    duration_days = Column(Integer, nullable=False) # e.g., 30 for monthly, 365 for yearly
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    # Relation inverse vers les abonnements
+    subscriptions = relationship("Subscription", back_populates="plan")
+
+    def __repr__(self) -> str:
+        return f"<Plan id={self.id} name={self.name} price={self.price}>"
 
 
 # ---------------------------
@@ -102,20 +131,20 @@ class Subscription(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    plan_name = Column(String(50), default="basic", nullable=False)
-    amount_usd = Column(Numeric(10, 2), nullable=False)
+    plan_id = Column(Integer, ForeignKey("plans.id"), nullable=False)
     payment_status = Column(SAEnum(SubscriptionStatus), default=SubscriptionStatus.paid, nullable=False)
     start_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    end_date = Column(DateTime(timezone=True), nullable=True)
+    end_date = Column(DateTime(timezone=True), nullable=False)
     auto_renew = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relations
     user = relationship("User", back_populates="subscriptions")
+    plan = relationship("Plan", back_populates="subscriptions")
     payments = relationship("Payment", back_populates="subscription", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Subscription id={self.id} user_id={self.user_id} plan={self.plan_name}>"
+        return f"<Subscription id={self.id} user_id={self.user_id} plan_id={self.plan_id}>"
 
 
 # ---------------------------
@@ -231,6 +260,25 @@ class Notification(Base):
 
     def __repr__(self) -> str:
         return f"<Notification id={self.id} user_id={self.user_id} channel={self.channel.value} status={self.status}>"
+
+
+# ---------------------------
+# USER DEVICE TOKENS (pour les notifications push)
+# ---------------------------
+class UserDeviceToken(Base):
+    __tablename__ = "user_device_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    device_token = Column(String(255), unique=True, nullable=False, index=True)
+    device_type = Column(SAEnum(DeviceType, name="device_type"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relation
+    user = relationship("User", back_populates="device_tokens")
+
+    def __repr__(self) -> str:
+        return f"<UserDeviceToken id={self.id} user_id={self.user_id} type={self.device_type.value}>"
 
 
 # ---------------------------
