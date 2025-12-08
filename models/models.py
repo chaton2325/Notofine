@@ -158,6 +158,8 @@ class Ticket(Base):
     ticket_number = Column(String(50), nullable=False, index=True)
     description = Column(Text, nullable=True)
     amount_usd = Column(Numeric(10, 2), nullable=False)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    dispute_url = Column(String(255), nullable=False)
     image_url = Column(String(255), nullable=True)
     payment_url = Column(String(255), nullable=True)
     status = Column(SAEnum(TicketStatus), default=TicketStatus.en_cours, nullable=False)

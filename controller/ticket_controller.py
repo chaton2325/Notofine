@@ -2,6 +2,7 @@ import os
 import uuid
 import shutil
 from typing import List, Optional
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
@@ -40,6 +41,8 @@ def create_ticket(
     amount_usd: float = Form(...),
     description: Optional[str] = Form(None),
     payment_url: Optional[str] = Form(None),
+    dispute_url: str = Form(...),
+    due_date: Optional[str] = Form(None),
     image: UploadFile = File(...)
 ):
     """
@@ -70,12 +73,22 @@ def create_ticket(
 
     # Créer la contravention en base de données
     try:
+        # parser due_date si fourni (attend un ISO format)
+        parsed_due_date = None
+        if due_date:
+            try:
+                parsed_due_date = datetime.fromisoformat(due_date)
+            except Exception:
+                raise HTTPException(status_code=400, detail="Le champ 'due_date' doit être au format ISO (ex: 2025-12-31T23:59:59)")
+
         new_ticket = Ticket(
             user_id=user.id,
             ticket_number=ticket_number,
             amount_usd=amount_usd,
             description=description,
             payment_url=payment_url,
+            dispute_url=dispute_url,
+            due_date=parsed_due_date,
             image_url=image_url,
             status=TicketStatus.en_cours
         )
@@ -87,7 +100,9 @@ def create_ticket(
             "message": "Contravention créée avec succès",
             "ticket_id": new_ticket.id,
             "image_url": image_url,
-            "payment_url": new_ticket.payment_url
+            "payment_url": new_ticket.payment_url,
+            "dispute_url": new_ticket.dispute_url,
+            "due_date": new_ticket.due_date.isoformat() if new_ticket.due_date else None
         }
     except Exception as e:
         db.rollback()
@@ -112,6 +127,8 @@ def get_user_tickets(email: str, db: Session = Depends(get_db)):
             "description": t.description,
             "amount_usd": float(t.amount_usd),
             "payment_url": t.payment_url,
+            "dispute_url": t.dispute_url,
+            "due_date": t.due_date.isoformat() if t.due_date else None,
             "image_url": t.image_url,
             "status": t.status.value,
             "created_at": t.created_at.isoformat()
@@ -125,7 +142,9 @@ def update_ticket(
     description: Optional[str] = Form(None),
     status: Optional[TicketStatus] = Form(None),
     amount_usd: Optional[float] = Form(None),
-    payment_url: Optional[str] = Form(None)
+    payment_url: Optional[str] = Form(None),
+    dispute_url: Optional[str] = Form(None),
+    due_date: Optional[str] = Form(None)
 ):
     """
     Met à jour les informations d'une contravention (description, statut, montant, lien de paiement).
@@ -142,6 +161,13 @@ def update_ticket(
         ticket.amount_usd = amount_usd
     if payment_url is not None:
         ticket.payment_url = payment_url
+    if dispute_url is not None:
+        ticket.dispute_url = dispute_url
+    if due_date is not None:
+        try:
+            ticket.due_date = datetime.fromisoformat(due_date)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Le champ 'due_date' doit être au format ISO (ex: 2025-12-31T23:59:59)")
 
     try:
         db.commit()

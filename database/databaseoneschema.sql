@@ -60,6 +60,8 @@ CREATE TABLE tickets (
     ticket_number VARCHAR(50) NOT NULL,
     description TEXT,
     amount_usd NUMERIC(10,2) NOT NULL,
+    due_date TIMESTAMP WITH TIME ZONE, -- date limite optionnelle pour payer
+    dispute_url VARCHAR(255) NOT NULL, -- URL pour contester l'amende (non NULL)
     image_url VARCHAR(255),
     payment_url VARCHAR(255),
     status VARCHAR(20) DEFAULT 'en_cours',
