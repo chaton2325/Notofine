@@ -44,6 +44,7 @@ def get_user_by_email(email: str, db: Session) -> User:
 def create_user_reminder(reminder_data: ReminderCreate, db: Session = Depends(get_db)):
     """
     Crée une nouvelle configuration de rappel pour une contravention spécifique.
+    Une seule alerte/rappel est autorisée par ticket.
     """
     # Vérifier que la contravention existe
     ticket = db.query(Ticket).filter(Ticket.id == reminder_data.ticket_id).first()
@@ -51,6 +52,14 @@ def create_user_reminder(reminder_data: ReminderCreate, db: Session = Depends(ge
         raise HTTPException(
             status_code=404,
             detail=f"Contravention avec l'ID '{reminder_data.ticket_id}' non trouvée."
+        )
+    
+    # Vérifier qu'il n'existe pas déjà un rappel pour ce ticket
+    existing_reminder = db.query(Reminder).filter(Reminder.ticket_id == reminder_data.ticket_id).first()
+    if existing_reminder:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Un rappel existe déjà pour cette contravention (ID: {existing_reminder.id}). Vous ne pouvez créer qu'un seul rappel par ticket."
         )
 
     try:
