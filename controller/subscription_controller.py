@@ -38,6 +38,31 @@ def get_all_plans(db: Session = Depends(get_db)):
     plans = db.query(models.Plan).filter(models.Plan.is_active == True).all()
     return plans
 
+def _create_subscription_logic(user: models.User, plan: models.Plan, db: Session, auto_renew: bool = False) -> models.Subscription:
+    """
+    Logique de service pour créer un abonnement.
+    Cette fonction est réutilisable et n'est pas une route API.
+    """
+    if user.abonnement_finish and user.abonnement_finish > datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="L'utilisateur a déjà un abonnement actif.")
+
+    start_date = datetime.now(timezone.utc)
+    end_date = start_date + timedelta(days=plan.duration_days)
+    
+    new_sub = models.Subscription(
+        user_id=user.id,
+        plan_id=plan.id,
+        start_date=start_date,
+        end_date=end_date,
+        auto_renew=auto_renew,
+        payment_status=models.SubscriptionStatus.paid
+    )
+
+    user.abonnement_finish = end_date
+
+    db.add(new_sub)
+    return new_sub
+
 # =================================
 # Endpoints pour les Abonnements
 # =================================
@@ -56,24 +81,9 @@ def create_subscription(sub_data: subscription_plan_schema.SubscriptionCreate, d
     if not plan:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Plan avec l'ID {sub_data.plan_id} non trouvé.")
 
-    if user.abonnement_finish and user.abonnement_finish > datetime.now(timezone.utc):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="L'utilisateur a déjà un abonnement actif.")
-
-    start_date = datetime.now(timezone.utc)
-    end_date = start_date + timedelta(days=plan.duration_days)
+    # Appeler la logique de service partagée
+    new_sub = _create_subscription_logic(user=user, plan=plan, db=db, auto_renew=sub_data.auto_renew)
     
-    new_sub = models.Subscription(
-        user_id=user.id,
-        plan_id=plan.id,
-        start_date=start_date,
-        end_date=end_date,
-        auto_renew=sub_data.auto_renew,
-        payment_status=models.SubscriptionStatus.paid
-    )
-
-    user.abonnement_finish = end_date
-
-    db.add(new_sub)
     db.commit()
     db.refresh(new_sub)
     
