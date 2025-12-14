@@ -98,6 +98,7 @@ class User(Base):
     subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     device_tokens = relationship("UserDeviceToken", back_populates="user", cascade="all, delete-orphan")
+    password_reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email={self.email}>"
@@ -287,6 +288,25 @@ class UserDeviceToken(Base):
 # Indexes / Table args (optimisations simples)
 # ---------------------------
 # Indexes are already created via index=True on columns above.
+
+
+# ---------------------------
+# PASSWORD RESET TOKENS
+# ---------------------------
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token = Column(String(255), unique=True, nullable=False, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relation
+    user = relationship("User", back_populates="password_reset_tokens")
+
+    def __repr__(self) -> str:
+        return f"<PasswordResetToken user_id={self.user_id} expires_at={self.expires_at}>"
 # If you want composite indexes or additional tuning, add them here:
 # Example: Index('ix_ticket_user_ticketnum', Ticket.user_id, Ticket.ticket_number)
 

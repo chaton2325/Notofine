@@ -3,8 +3,12 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 
-from databaseone import SessionLocal
-from models.models import User, Ticket, Reminder, ReminderChannel, NotificationChannel, Notification
+from databaseone import SessionLocal, engine # 1. Importer l'engine
+from models import models # 2. Importer tous les modèles
+
+# 3. Créer les tables dans la base de données (si elles n'existent pas)
+models.Base.metadata.create_all(bind=engine)
+
 from controller.auth_controller import router as auth_router
 from controller.ticket_controller import router as ticket_router
 from controller.reminder_controller import router as reminder_router

@@ -6,10 +6,12 @@ from passlib.context import CryptContext
 from typing import Optional
 
 from databaseone import get_db
-from models.models import User , State
+from models.models import User, State, PasswordResetToken
 from passlib.context import CryptContext
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+import secrets
 
+from .email_service import send_password_reset_email
 
 
 
@@ -79,6 +81,15 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     state: Optional[str] = None
     password: Optional[str] = None  # 👈 nouveau champ
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetConfirm(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str
+
 
 # Routes
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -205,9 +216,69 @@ def update_user_profile(
     db.refresh(user)
     return UserResponse.from_orm(user)
 
+@router.post("/request-password-reset", status_code=status.HTTP_200_OK)
+def request_password_reset(request_data: PasswordResetRequest, db: Session = Depends(get_db)):
+    """
+    Déclenche le processus de réinitialisation de mot de passe.
+    Un email avec un lien unique est envoyé à l'utilisateur.
+    """
+    user = db.query(User).filter(User.email == request_data.email).first()
+    if not user:
+        # Pour des raisons de sécurité, on ne confirme pas si l'email existe ou non.
+        # On retourne une réponse positive dans tous les cas pour éviter l'énumération d'utilisateurs.
+        print(f"Tentative de réinitialisation pour un email inexistant : {request_data.email}")
+        return {"message": "Si un compte est associé à cet email, un lien de réinitialisation a été envoyé."}
+
+    # Générer un code à 6 chiffres
+    code = str(secrets.randbelow(1_000_000)).zfill(6)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+    # Stocker le token en base de données
+    # Note: La colonne 'token' stockera maintenant notre code à 6 chiffres.
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=code,
+        expires_at=expires_at
+    )
+    db.add(reset_token)
+    db.commit()
+
+    # Envoyer l'email
+    send_password_reset_email(user.email, code)
+
+    return {"message": "Si un compte est associé à cet email, un lien de réinitialisation a été envoyé."}
 
 
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+def reset_password(reset_data: PasswordResetConfirm, db: Session = Depends(get_db)):
+    """
+    Finalise la réinitialisation du mot de passe avec un token valide.
+    """
+    # Trouver l'utilisateur
+    user = db.query(User).filter(User.email == reset_data.email).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le code de réinitialisation est invalide ou a expiré.")
 
+    # Trouver le token en se basant sur le code et l'ID de l'utilisateur
+    token_record = db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == user.id,
+        PasswordResetToken.token == reset_data.code
+    ).first()
 
+    if not token_record:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le code de réinitialisation est invalide ou a expiré.")
 
+    # Vérifier si le token a expiré
+    if token_record.expires_at < datetime.now(timezone.utc):
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le jeton de réinitialisation a expiré.")
 
+    # Mettre à jour le mot de passe de l'utilisateur
+    user = token_record.user
+    user.password_hash = get_password_hash(reset_data.new_password)
+
+    # Supprimer le token pour qu'il ne soit pas réutilisé
+    db.delete(token_record)
+    db.commit()
+
+    return {"message": "Votre mot de passe a été réinitialisé avec succès."}
