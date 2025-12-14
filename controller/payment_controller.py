@@ -46,7 +46,7 @@ def create_checkout_session(
 
     try:
         # URL de base de votre backend. Pour le développement, vous pouvez utiliser un service comme ngrok.
-        BACKEND_DOMAIN = "http://localhost:8080" #Sandbox
+        BACKEND_DOMAIN = "https://notofine-backend-ancaw.ondigitalocean.app" #Live mode
         
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
