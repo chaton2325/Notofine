@@ -65,7 +65,7 @@ def create_checkout_session(
             mode='payment',
             success_url=BACKEND_DOMAIN + '/api/payment/success?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=BACKEND_DOMAIN + '/api/payment/cancel',
-            # Nous passons les IDs en métadonnées pour les retrouver dans le webhook
+            #Nous passons les IDs en métadonnées pour les retrouver dans le webhook
             metadata={
                 'user_id': user.id,
                 'plan_id': plan.id

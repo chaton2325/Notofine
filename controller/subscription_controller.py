@@ -112,7 +112,11 @@ def check_user_subscription_status(user_email: str, db: Session = Depends(get_db
     if user.abonnement_finish and user.abonnement_finish > datetime.now(timezone.utc):
         active_sub = db.query(models.Subscription).filter(models.Subscription.user_id == user.id, models.Subscription.end_date == user.abonnement_finish).first()
         return subscription_plan_schema.SubscriptionStatusResponse(
-            is_subscribed=True, is_active=True, end_date=user.abonnement_finish, plan_name=active_sub.plan.name if active_sub else "Inconnu"
+            is_subscribed=True,
+            is_active=True,
+            subscription_id=active_sub.id if active_sub else None,
+            end_date=user.abonnement_finish,
+            plan_name=active_sub.plan.name if active_sub else "Inconnu"
         )
     
     return subscription_plan_schema.SubscriptionStatusResponse(is_subscribed=False, is_active=False)

@@ -54,5 +54,6 @@ class Subscription(BaseModel):
 class SubscriptionStatusResponse(BaseModel):
     is_subscribed: bool
     is_active: bool
+    subscription_id: Optional[int] = None
     end_date: Optional[datetime] = None
     plan_name: Optional[str] = None
