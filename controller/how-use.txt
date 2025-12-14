@@ -40,3 +40,9 @@ supprimer un plan (ID 1): curl -X DELETE "http://127.0.0.1:8000/api/admin/plans/
 Ajouter/Mettre à jour un token d'appareil: curl -X POST "http://127.0.0.1:8000/api/device-tokens" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"user_email\": \"test@example.com\", \"device_token\": \"un-token-unique-pour-un-appareil-android\", \"device_type\": \"android\"}"
 Supprimer un token d'appareil: curl -X DELETE "http://127.0.0.1:8000/api/device-tokens/un-token-unique-pour-un-appareil-android" -H "accept: application/json"
 Lister les tokens d'un utilisateur: curl -X GET "http://127.0.0.1:8000/api/device-tokens/user/test@example.com" -H "accept: application/json"
+
+
+--------------------------------------------------Stripe Payment----------------------------------------------------
+Créer une session de paiement Stripe: curl -X POST "http://127.0.0.1:8000/api/payment/create-checkout-session" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"user_email\": \"test@example.com\", \"plan_id\": 1}"
+# Le webhook (/api/payment/webhook) est appelé par Stripe en arrière-plan pour confirmer le paiement et créer l'abonnement.
+# Les URLs /api/payment/success et /api/payment/cancel sont des pages de redirection pour l'utilisateur après le paiement.
