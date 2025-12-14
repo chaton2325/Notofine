@@ -4,6 +4,7 @@ Create user : curl -X POST "http://localhost:8000/auth/register" -H "Content-Typ
 Login user : curl -X POST "http://localhost:8000/auth/login" -H "Content-Type: application/json" -d "{\"email\": \"jean@example.com\", \"password\": \"monmotdepasse\"}"
 Obtain user : curl -X GET "http://localhost:8000/auth/user/jean@example.com"
 update user : curl -X PUT "http://localhost:8000/auth/user/jean@example.com" -H "Content-Type: application/json" -d "{\"full_name\": \"Jean Dupont Modifié\", \"phone\": \"33333333\", \"state\": \"Tunis\", \"password\": \"NouveauMotDePasse\"}"
+
 Demander un code de réinitialisation de mot de passe : curl -X POST "http://127.0.0.1:8080/auth/request-password-reset" -H "Content-Type: application/json" -d "{\"email\": \"tsarisila@gmail.com\"}"
 # (Après avoir reçu le code par email)
 Réinitialiser le mot de passe : curl -X POST "http://127.0.0.1:8080/auth/reset-password" -H "Content-Type: application/json" -d "{\"email\": \"tsarisila@gmail.com\", \"code\": \"123456\", \"new_password\": \"MonNouveauMotDePasseSuperSecret\"}"

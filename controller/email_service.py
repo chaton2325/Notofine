@@ -16,7 +16,7 @@ def send_password_reset_email(recipient_email: str, reset_code: str):
     """
     Envoie un email de réinitialisation de mot de passe à l'utilisateur.
     """
-    subject = "Votre code de réinitialisation de mot de passe NoToFine"
+    subject = "Your NoToFine password reset code"
     
     # Corps de l'email en HTML pour un meilleur rendu
     html_body = f"""
