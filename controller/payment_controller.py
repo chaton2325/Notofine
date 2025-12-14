@@ -13,7 +13,7 @@ from schemas import subscription_plan_schema
 
 # Configurer la clé API Stripe depuis les variables d'environnement
 # C'est la manière la plus sécurisée de gérer vos clés secrètes.
-stripe.api_key = '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' #Ca c'est la clé de plana
+stripe.api_key = '' #Ca c'est la clé de plana
 
 router = APIRouter(
     prefix="/api/payment",
