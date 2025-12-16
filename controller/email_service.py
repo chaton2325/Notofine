@@ -1,13 +1,13 @@
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 
 # --- Configuration SMTP ---
-# Il est fortement recommandé de stocker ces informations dans des variables d'environnement
-# plutôt qu'en dur dans le code pour des raisons de sécurité.
-HOSTINGER_EMAIL = "noreply@notofine.app"
-HOSTINGER_PASSWORD = "Yaourt150@" # Remplacez par votre mot de passe réel
+# Les informations sensibles sont chargées depuis les variables d'environnement.
+HOSTINGER_EMAIL = os.getenv("HOSTINGER_EMAIL")
+HOSTINGER_PASSWORD = os.getenv("HOSTINGER_PASSWORD")
 HOSTINGER_SMTP_SERVER = "smtp.hostinger.com"
 HOSTINGER_SMTP_PORT = 465  # Port SSL
 
@@ -39,6 +39,11 @@ def send_password_reset_email(recipient_email: str, reset_code: str):
     msg['Subject'] = subject
     msg.attach(MIMEText(html_body, 'html'))
 
+    if not HOSTINGER_EMAIL or not HOSTINGER_PASSWORD:
+        error_msg = "Les variables d'environnement HOSTINGER_EMAIL ou HOSTINGER_PASSWORD ne sont pas configurées."
+        print(f"Erreur: {error_msg}")
+        # Dans une application réelle, vous devriez logger cette erreur.
+        return
     try:
         with smtplib.SMTP_SSL(HOSTINGER_SMTP_SERVER, HOSTINGER_SMTP_PORT) as server:
             server.login(HOSTINGER_EMAIL, HOSTINGER_PASSWORD)

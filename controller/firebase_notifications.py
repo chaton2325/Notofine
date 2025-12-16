@@ -1,9 +1,8 @@
 import os
+import json
 from firebase_admin import credentials, messaging
 import firebase_admin
 from typing import Optional
-
-CREDENTIALS_PATH = "notofine-firebase-adminsdk-fbsvc-0feb8386dc.json"
 
 def initialize_firebase():
     """
@@ -11,14 +10,19 @@ def initialize_firebase():
     Cette fonction doit être appelée au démarrage de l'application FastAPI.
     """
     if not firebase_admin._apps:
-        if not os.path.exists(CREDENTIALS_PATH):
-            # Lever une exception arrête le démarrage de l'application si le fichier est manquant.
-            # C'est une bonne pratique pour éviter les erreurs en production.
-            raise FileNotFoundError(f"Le fichier de crédentials Firebase '{CREDENTIALS_PATH}' est introuvable.")
-        
-        cred = credentials.Certificate(CREDENTIALS_PATH)
-        firebase_admin.initialize_app(cred)
-        print("✅ Firebase initialisé avec succès.")
+        firebase_credentials_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+        if not firebase_credentials_json:
+            raise ValueError("La variable d'environnement 'FIREBASE_CREDENTIALS_JSON' est manquante.")
+
+        try:
+            cred_dict = json.loads(firebase_credentials_json)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+            print("✅ Firebase initialisé avec succès.")
+        except json.JSONDecodeError:
+            raise ValueError("Impossible de parser le JSON des credentials Firebase. Vérifiez la variable d'environnement.")
+        except Exception as e:
+            raise RuntimeError(f"Erreur lors de l'initialisation de Firebase : {e}")
 
 def send_push_notification(token: str, title: str, body: str, image_url: Optional[str] = None):
     """
@@ -58,6 +62,6 @@ def send_push_notification(token: str, title: str, body: str, image_url: Optiona
         response = messaging.send(message)
         print(f"✅ Notification push envoyée avec succès à un appareil (réponse: {response})")
         return response
-    except firebase_admin.FirebaseError as e:
-        print(f"🔥 ERREUR FIREBASE lors de l'envoi: {e}")
+    except :
+        print(f"🔥 ERREUR FIREBASE lors de l'envoi:")
         raise  # Fait remonter l'exception pour que le contrôleur la gère

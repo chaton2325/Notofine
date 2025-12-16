@@ -1,5 +1,6 @@
 import json
 import stripe
+import os
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query, Header
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
@@ -13,10 +14,11 @@ from .subscription_controller import _create_subscription_logic # Import de la f
 
 # Configurer la clé API Stripe depuis les variables d'environnement
 # C'est la manière la plus sécurisée de gérer vos clés secrètes.
-stripe.api_key = 'sk_test_51SbVFqRy2m4d5QnKoHyOjmCP5ENf52DtENpSh9Zc0APFg8LX5a21qB1zslQGNfeXlcV3mLdK9EOVkJ4H1DdHqCqK00ArhX3xFD' # Remplacez par votre clé secrète Stripe
-
-# ATTENTION : Il est fortement déconseillé de stocker cette clé en clair dans le code pour la production.
-# Cette clé n'est plus utilisée dans cette configuration, mais conservée si vous réactivez le webhook.
+stripe.api_key = os.getenv("STRIPE_API_KEY")
+if not stripe.api_key:
+    print("⚠️  ATTENTION : La variable d'environnement STRIPE_API_KEY n'est pas définie.")
+    # Dans un environnement de production, vous pourriez vouloir lever une exception ici
+    # raise ValueError("La clé API Stripe est manquante.")
 
 router = APIRouter(
     prefix="/api/payment", 

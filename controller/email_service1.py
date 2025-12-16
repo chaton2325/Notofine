@@ -1,5 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
+import os
 from email.mime.multipart import MIMEMultipart
 
 SERVER_NAME = "EMAIL_SENDER"
@@ -21,13 +22,13 @@ def send_email_notification(user_email, subject, message):
 
     
     # Config Hostinger SMTP
-    HOSTINGER_EMAIL = "noreply@notofine.app"
-    HOSTINGER_PASSWORD = "Yaourt150@"  # <-- mettre le mot de passe réel ici
+    HOSTINGER_EMAIL = os.getenv("HOSTINGER_EMAIL")
+    HOSTINGER_PASSWORD = os.getenv("HOSTINGER_PASSWORD")
     HOSTINGER_SMTP_SERVER = "smtp.hostinger.com"
     HOSTINGER_SMTP_PORT = 465  # SSL
 
     try:
-        if not HOSTINGER_PASSWORD or HOSTINGER_PASSWORD == "":
+        if not HOSTINGER_EMAIL or not HOSTINGER_PASSWORD:
             error = "HOSTINGER_PASSWORD non configuré."
             print(f"[{SERVER_NAME}] ✗ {error}")
             return False, error

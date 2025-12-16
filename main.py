@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+
+from dotenv import load_dotenv # Importez load_dotenv
+load_dotenv() # Charge les variables depuis le fichier .env
+
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 

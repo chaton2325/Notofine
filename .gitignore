@@ -1,0 +1,9 @@
+# .gitignore
+
+# ... autres lignes ...
+
+# Fichier de variables d'environnement
+.env
+
+# Fichiers de credentials
+*.json
