@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
@@ -16,6 +16,8 @@ from controller.subscription_controller import router as subscription_router
 from controller.admin_controller import router as admin_router
 from controller.device_token_controller import router as device_token_router
 from controller.payment_controller import router as payment_router
+from controller.notification_controller import router as notification_router # Ajout du nouveau routeur
+from controller.firebase_notifications import initialize_firebase
 from fastapi.middleware.cors import CORSMiddleware # 1. Importez le middleware
 
 app = FastAPI(
@@ -23,6 +25,14 @@ app = FastAPI(
     description="API de gestion des contraventions avec notifications",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+def on_startup():
+    """
+    Fonctions à exécuter une seule fois au démarrage de l'application.
+    """
+    print("🚀 Démarrage des services externes...")
+    initialize_firebase()
 
 # Monter le répertoire statique pour servir les images uploadées
 # Les fichiers dans le dossier "static" seront accessibles via l'URL "/static"
@@ -36,6 +46,7 @@ app.include_router(subscription_router)
 app.include_router(admin_router)
 app.include_router(device_token_router)
 app.include_router(payment_router)
+app.include_router(notification_router) # Inclusion du nouveau routeur
 
 # 2. Définissez les "origines" autorisées (les adresses qui ont le droit de parler à votre API)
 origins = [

@@ -49,3 +49,10 @@ Lister les tokens d'un utilisateur: curl -X GET "http://127.0.0.1:8000/api/devic
 Créer une session de paiement Stripe: curl -X POST "http://127.0.0.1:8000/api/payment/create-checkout-session" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"user_email\": \"test@example.com\", \"plan_id\": 1}"
 # Le webhook (/api/payment/webhook) est appelé par Stripe en arrière-plan pour confirmer le paiement et créer l'abonnement.
 # Les URLs /api/payment/success et /api/payment/cancel sont des pages de redirection pour l'utilisateur après le paiement.
+
+--------------------------------------------------Generic Email Notification----------------------------------------------------
+Envoyer un email de notification: curl -X POST "http://127.0.0.1:8080/api/notifications/email" -H "Content-Type: application/json" -d "{\"user_email\": \"destinataire@example.com\", \"subject\": \"Sujet de test\", \"message\": \"Ceci est le corps du message de test.\"}"
+
+--------------------------------------------------Generic Push Notification (Firebase)----------------------------------------------------
+Envoyer une notification push (sans image): curl -X POST "http://127.0.0.1:8080/api/notifications/push" -H "Content-Type: application/json" -d "{\"token\": \"VOTRE_TOKEN_FCM_ICI\", \"title\": \"Titre de la notification\", \"body\": \"Ceci est le corps de la notification push.\"}"
+Envoyer une notification push (avec image): curl -X POST "http://127.0.0.1:8080/api/notifications/push" -H "Content-Type: application/json" -d "{\"token\": \"VOTRE_TOKEN_FCM_ICI\", \"title\": \"Titre avec image\", \"body\": \"Notification avec une belle image.\", \"image_url\": \"https://www.notofine.app/static/images/logo.png\"}"

@@ -18,7 +18,6 @@ stripe.api_key = 'sk_test_51SbVFqRy2m4d5QnKoHyOjmCP5ENf52DtENpSh9Zc0APFg8LX5a21q
 # ATTENTION : Il est fortement déconseillé de stocker cette clé en clair dans le code pour la production.
 # Cette clé n'est plus utilisée dans cette configuration, mais conservée si vous réactivez le webhook.
 
-
 router = APIRouter(
     prefix="/api/payment", 
     tags=["Payment"]
