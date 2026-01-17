@@ -307,6 +307,24 @@ class PasswordResetToken(Base):
 
     def __repr__(self) -> str:
         return f"<PasswordResetToken user_id={self.user_id} expires_at={self.expires_at}>"
+
+
+# ---------------------------
+# EMAIL VERIFICATION CODES (pour les inscriptions et autres vérifications)
+# ---------------------------
+class EmailVerificationCode(Base):
+    __tablename__ = "email_verification_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(100), nullable=False, index=True)
+    code = Column(String(6), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<EmailVerificationCode email={self.email} expires_at={self.expires_at}>"
+
+
 # If you want composite indexes or additional tuning, add them here:
 # Example: Index('ix_ticket_user_ticketnum', Ticket.user_id, Ticket.ticket_number)
 

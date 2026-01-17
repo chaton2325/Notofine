@@ -6,7 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from databaseone import SessionLocal
-from models.models import PasswordResetToken, User
+from models.models import PasswordResetToken, User, EmailVerificationCode
 
 
 # --- Configuration SMTP ---
@@ -73,6 +73,10 @@ def send_verification_code_and_store(email: str, db: Session) -> tuple[bool, str
     """
     Génère un code de vérification, le stocke en base de données et l'envoie par email.
     
+    ADAPTATIVE: Fonctionne pour:
+    - Les utilisateurs déjà inscrits
+    - Les emails non inscrits (pour l'inscription)
+    
     Args:
         email: L'adresse email de l'utilisateur
         db: La session de base de données
@@ -81,11 +85,6 @@ def send_verification_code_and_store(email: str, db: Session) -> tuple[bool, str
         tuple[bool, str]: (succès, message)
     """
     try:
-        # Vérifier que l'utilisateur existe
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            return False, "Utilisateur non trouvé"
-        
         # Générer le code
         verification_code = generate_verification_code()
         
@@ -94,17 +93,18 @@ def send_verification_code_and_store(email: str, db: Session) -> tuple[bool, str
         if not email_sent:
             return False, "Impossible d'envoyer l'email"
         
-        # Stocker le code dans la base de données (dans la table password_reset_tokens)
-        # On réutilise cette table pour stocker les codes de vérification
+        # Stocker le code dans la base de données
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
         
-        reset_token = PasswordResetToken(
-            user_id=user.id,
-            token=verification_code,
+        # Créer un record dans la table EmailVerificationCode
+        # (Fonctionne pour les emails existants ET ceux qui ne sont pas inscrits)
+        verification_record = EmailVerificationCode(
+            email=email,
+            code=verification_code,
             expires_at=expires_at
         )
         
-        db.add(reset_token)
+        db.add(verification_record)
         db.commit()
         
         return True, f"Code de vérification envoyé à {email}"
@@ -119,6 +119,10 @@ def verify_email_code(email: str, code: str, db: Session) -> tuple[bool, str]:
     """
     Vérifie le code de vérification pour une adresse email.
     
+    ADAPTATIVE: Fonctionne pour:
+    - Les utilisateurs déjà inscrits
+    - Les emails non inscrits (pour l'inscription)
+    
     Args:
         email: L'adresse email de l'utilisateur
         code: Le code de vérification fourni par l'utilisateur
@@ -128,28 +132,23 @@ def verify_email_code(email: str, code: str, db: Session) -> tuple[bool, str]:
         tuple[bool, str]: (succès, message)
     """
     try:
-        # Récupérer l'utilisateur
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            return False, "Utilisateur non trouvé"
+        # Récupérer le record de vérification le plus récent pour cet email
+        verification_record = db.query(EmailVerificationCode).filter(
+            EmailVerificationCode.email == email,
+            EmailVerificationCode.code == code
+        ).order_by(EmailVerificationCode.created_at.desc()).first()
         
-        # Récupérer le token le plus récent pour cet utilisateur
-        reset_token = db.query(PasswordResetToken).filter(
-            PasswordResetToken.user_id == user.id,
-            PasswordResetToken.token == code
-        ).order_by(PasswordResetToken.created_at.desc()).first()
-        
-        if not reset_token:
+        if not verification_record:
             return False, "Code de vérification invalide"
         
         # Vérifier que le code n'a pas expiré
-        if datetime.now(timezone.utc) > reset_token.expires_at:
-            db.delete(reset_token)
+        if datetime.now(timezone.utc) > verification_record.expires_at:
+            db.delete(verification_record)
             db.commit()
             return False, "Le code a expiré. Demandez un nouveau code."
         
         # Le code est valide!
-        db.delete(reset_token)
+        db.delete(verification_record)
         db.commit()
         
         return True, "Code vérifié avec succès"
