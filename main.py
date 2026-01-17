@@ -21,6 +21,7 @@ from controller.admin_controller import router as admin_router
 from controller.device_token_controller import router as device_token_router
 from controller.payment_controller import router as payment_router
 from controller.notification_controller import router as notification_router # Ajout du nouveau routeur
+from controller.session_chat import router as chat_router # Ajout du routeur de chat
 from controller.firebase_notifications import initialize_firebase
 from fastapi.middleware.cors import CORSMiddleware # 1. Importez le middleware
 
@@ -51,6 +52,7 @@ app.include_router(admin_router)
 app.include_router(device_token_router)
 app.include_router(payment_router)
 app.include_router(notification_router) # Inclusion du nouveau routeur
+app.include_router(chat_router) # Inclusion du routeur de chat
 
 # 2. Définissez les "origines" autorisées (les adresses qui ont le droit de parler à votre API)
 origins = [

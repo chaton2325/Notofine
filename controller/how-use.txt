@@ -56,3 +56,12 @@ Envoyer un email de notification: curl -X POST "http://127.0.0.1:8080/api/notifi
 --------------------------------------------------Generic Push Notification (Firebase)----------------------------------------------------
 Envoyer une notification push (sans image): curl -X POST "http://127.0.0.1:8080/api/notifications/push" -H "Content-Type: application/json" -d "{\"token\": \"VOTRE_TOKEN_FCM_ICI\", \"title\": \"Titre de la notification\", \"body\": \"Ceci est le corps de la notification push.\"}"
 Envoyer une notification push (avec image): curl -X POST "http://127.0.0.1:8080/api/notifications/push" -H "Content-Type: application/json" -d "{\"token\": \"foB76E9PRy2l4AwmuWtNzf:APA91bGxo6BUPrsNmRuvuhJOAqiOgrpqbzZqi4V5fA17faqk7KoXWXWG3rQz9exKwZv6RCihYPz0vKB7MjATAu-j-sy6NqaMMBE9GMSGCLsWQKXwIob-KGA\", \"title\": \"Titre avec image\", \"body\": \"Notification avec une belle image.\", \"image_url\": \"https://www.notofine.app/icon.png\"}"
+
+--------------------------------------------------Chat Session Management (Firebase Realtime DB)----------------------------------------------------
+Initier une session de chat avec l'administrateur: curl -X POST "http://127.0.0.1:8000/chat/sessions/initiate" -H "Content-Type: application/json" -d "{\"user_email\":\"user@example.com\",\"user_name\":\"John Doe\",\"subject\":\"J'ai une question\"}"
+Envoyer un message (utilisateur): curl -X POST "http://127.0.0.1:8000/chat/messages/send" -H "Content-Type: application/json" -d "{\"user_email\":\"user@example.com\",\"sender\":\"user\",\"content\":\"Bonjour, j'ai besoin d'aide\"}"
+Envoyer un message (admin): curl -X POST "http://127.0.0.1:8000/chat/messages/send" -H "Content-Type: application/json" -d "{\"user_email\":\"user@example.com\",\"sender\":\"admin\",\"content\":\"Bonjour! Comment puis-je vous aider?\"}"
+Récupérer les informations d'une session: curl -X GET "http://127.0.0.1:8000/chat/sessions/user@example.com"
+Récupérer tous les messages d'une session: curl -X GET "http://127.0.0.1:8000/chat/messages/user@example.com"
+Fermer une session de chat: curl -X PUT "http://127.0.0.1:8000/chat/sessions/user@example.com/close"
+Lister toutes les sessions de chat (admin): curl -X GET "http://127.0.0.1:8000/chat/sessions"

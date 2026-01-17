@@ -27,14 +27,14 @@ def send_password_reset_email(recipient_email: str, reset_code: str):
         <p>Please use the code below to reset your password. This code is valid for 15 minutes.</p>
         <h2 style="text-align:center; letter-spacing: 5px; font-size: 28px;">{reset_code}</h2>
         <p>If you did not request this, please ignore this email.</p>
-        <p>Best regards,<br>The NoToFine Team</p>
+        <p>Best regards,<br>The No2Fine Team</p>
     </body>
     </html>
     """
 
 
     msg = MIMEMultipart()
-    msg['From'] = f"NoToFine <{HOSTINGER_EMAIL}>"
+    msg['From'] = f"No2Fine <{HOSTINGER_EMAIL}>"
     msg['To'] = recipient_email
     msg['Subject'] = subject
     msg.attach(MIMEText(html_body, 'html'))
