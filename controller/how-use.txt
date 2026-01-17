@@ -9,6 +9,9 @@ Demander un code de réinitialisation de mot de passe : curl -X POST "http://127
 # (Après avoir reçu le code par email)
 Réinitialiser le mot de passe : curl -X POST "http://127.0.0.1:8080/auth/reset-password" -H "Content-Type: application/json" -d "{\"email\": \"tsarisila@gmail.com\", \"code\": \"123456\", \"new_password\": \"MonNouveauMotDePasseSuperSecret\"}"
 
+Envoyer un code de vérification par email : curl -X POST "http://127.0.0.1:8000/auth/send-verification-code" -H "Content-Type: application/json" -d "{\"email\": \"tsarisila@gmail.com\"}"
+Vérifier un code de vérification par email : curl -X POST "http://127.0.0.1:8000/auth/verify-email-code" -H "Content-Type: application/json" -d "{\"email\": \"tsarisila@gmail.com\", \"code\": \"123456\"}"
+
 
 -------------------------------------------- Ticket controller ---------------------------------------------------------
 curl -X POST "http://127.0.0.1:8000/tickets/" -H "Content-Type: multipart/form-data" -F "email=silaralph@gmail.com" -F "ticket_number=T789012" -F "amount_usd=75.00" -F "payment_url=https://payment.provider.com/pay/xyz123" -F "dispute_url=https://tickets.example.com/dispute/ABC123" -F "due_date=2025-12-31T23:59:59" -F "description=Stationnement non autorisé" -F "image=@op.jpg"

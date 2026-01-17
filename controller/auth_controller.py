@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 import secrets
 
 from .email_service import send_password_reset_email
+from .email_service3 import send_verification_code_and_store, verify_email_code
 
 
 
@@ -282,3 +283,53 @@ def reset_password(reset_data: PasswordResetConfirm, db: Session = Depends(get_d
     db.commit()
 
     return {"message": "Votre mot de passe a été réinitialisé avec succès."}
+
+
+# =====================================================
+# 📧 EMAIL VERIFICATION ROUTES (email_service3)
+# =====================================================
+
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+
+class EmailVerificationConfirm(BaseModel):
+    email: EmailStr
+    code: str
+
+@router.post("/send-verification-code", status_code=status.HTTP_200_OK)
+def send_verification_code(request_data: EmailVerificationRequest, db: Session = Depends(get_db)):
+    """
+    Envoie un code de vérification par email.
+    Le code est valide pendant 15 minutes.
+    
+    Args:
+        request_data: Contient l'email de l'utilisateur
+        
+    Returns:
+        Message de succès ou d'erreur
+    """
+    success, message = send_verification_code_and_store(request_data.email, db)
+    
+    if not success:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+    
+    return {"message": message}
+
+
+@router.post("/verify-email-code", status_code=status.HTTP_200_OK)
+def verify_email_verification_code(verify_data: EmailVerificationConfirm, db: Session = Depends(get_db)):
+    """
+    Vérifie le code de vérification envoyé par email.
+    
+    Args:
+        verify_data: Contient l'email et le code de vérification
+        
+    Returns:
+        Message de succès ou d'erreur
+    """
+    success, message = verify_email_code(verify_data.email, verify_data.code, db)
+    
+    if not success:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+    
+    return {"message": message}
